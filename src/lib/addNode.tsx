@@ -23,10 +23,8 @@ export const addNode = function (
 
   // 時間差(ms)
   const elapsedTime =
-    currentTime.getTime() * 1000 +
-    currentTime.getMilliseconds() -
-    effectiveStartTime.getTime() * 1000 +
-    effectiveStartTime.getMilliseconds();
+    currentTime.getTime() -
+    effectiveStartTime.getTime();
 
   if (turn === 0) {
     setTurn(1); // 初回は右ターン
