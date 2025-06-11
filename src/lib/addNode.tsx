@@ -1,20 +1,17 @@
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import {
-  currentNodeAtom,
-  missCountAtom,
-  nodesAtom,
-  turnAtom,
-  turnStartTimeAtom,
-} from "./atom";
 import { Node } from "@/types/node";
 
-export const addNode = function (input: number) {
-  const turn = useAtomValue(turnAtom);
-  const [startTime, setStartTime] = useAtom(turnStartTimeAtom);
-  const [nodes, setNodes] = useAtom(nodesAtom);
-  const [currentNode, setCurrentNode] = useAtom(currentNodeAtom);
-  const setMissCount = useSetAtom(missCountAtom);
-
+export const addNode = function (
+  input: number,
+  turn: number,
+  startTime: Date | null,
+  setStartTime: (time: Date) => void,
+  nodes: Node[],
+  setNodes: (nodes: Node[] | ((prev: Node[]) => Node[])) => void,
+  currentNode: number,
+  setCurrentNode: (node: number | ((prev: number) => number)) => void,
+  setMissCount: (fn: (prev: [number, number]) => [number, number]) => void,
+  setTurn: (prev: number) => void,
+) {
   let effectiveStartTime = startTime;
 
   if (!effectiveStartTime) {
@@ -31,6 +28,10 @@ export const addNode = function (input: number) {
     effectiveStartTime.getTime() * 1000 +
     effectiveStartTime.getMilliseconds();
 
+  if (turn === 0) {
+    setTurn(1); // 初回は右ターン
+  }
+
   // 末尾の場合
   if (currentNode >= nodes.length) {
     const newNode: Node = {
@@ -38,6 +39,8 @@ export const addNode = function (input: number) {
       time: elapsedTime,
     };
     setNodes((prev) => [...prev, newNode]);
+    setCurrentNode(0);
+    setTurn(turn * -1); // ターンを反転
   } else {
     setCurrentNode((prev) => prev + 1);
     if (judgeNode(input, nodes[currentNode], elapsedTime)) {

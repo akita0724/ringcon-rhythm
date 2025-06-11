@@ -6,7 +6,7 @@ const turnAtom = atom<number>(0);
 
 const turnStartTimeAtom = atom<Date | null>(null);
 
-const missCountAtom = atom<number[]>([0, 0]);
+const missCountAtom = atom<[number, number]>([0, 0]);
 const currentNodeAtom = atom<number>(0);
 
 // 初期ノードからの経過時間(ms)を管理する
