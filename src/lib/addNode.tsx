@@ -4,7 +4,7 @@ export const addNode = function (
   input: number,
   turn: number,
   startTime: Date | null,
-  setStartTime: (time: Date) => void,
+  setStartTime: (time: Date | null) => void,
   nodes: Node[],
   setNodes: (nodes: Node[] | ((prev: Node[]) => Node[])) => void,
   currentNode: number,
@@ -22,9 +22,7 @@ export const addNode = function (
   const currentTime = new Date();
 
   // 時間差(ms)
-  const elapsedTime =
-    currentTime.getTime() -
-    effectiveStartTime.getTime();
+  const elapsedTime = currentTime.getTime() - effectiveStartTime.getTime();
 
   if (turn === 0) {
     setTurn(1); // 初回は右ターン
@@ -39,6 +37,7 @@ export const addNode = function (
     setNodes((prev) => [...prev, newNode]);
     setCurrentNode(0);
     setTurn(turn * -1); // ターンを反転
+    setStartTime(null);
   } else {
     setCurrentNode((prev) => prev + 1);
     if (judgeNode(input, nodes[currentNode], elapsedTime)) {
