@@ -4,7 +4,7 @@ import { addNode } from "./addNode";
 export const createHandleKeyDown = (
   turn: number,
   startTime: Date | null,
-  setStartTime: (time: Date) => void,
+  setStartTime: (time: Date | null) => void,
   nodes: Node[],
   setNodes: (nodes: Node[] | ((prev: Node[]) => Node[])) => void,
   currentNode: number,
