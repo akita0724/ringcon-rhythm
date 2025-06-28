@@ -11,6 +11,7 @@ import {
 } from "@/lib/atom";
 import { useAtom } from "jotai";
 import { convertKeyToInput, createHandleKeyDown } from "@/lib/handleInput";
+import { Info } from "@/components/info";
 
 export default function Home() {
   const [turn, setTurn] = useAtom(turnAtom);
@@ -53,6 +54,7 @@ export default function Home() {
     <div>
       <Right_Turn turn={turn} />
       <Left_Turn turn={turn} />
+      <Info />
     </div>
   );
 }
