@@ -1,3 +1,6 @@
+// Many codes are cited from a library.
+// Refer to https://github.com/tomayac/joy-con-webhid/blob/main/src/parse.js
+
 type Accelerometer = {
   _raw: Buffer;
   _hex: Buffer;
@@ -200,6 +203,8 @@ export function calculateActualAccelerometer(accelerometers: Accelerometers) {
 export function calculateActualGyroscope(gyroscopes: Gyroscopes) {
   const elapsedTime = 0.005 * gyroscopes.length; // Spent 5ms to collect each data.
 
+  // The initial codes pass only g[number], so it may cause some errors
+  // To cope with this problem, I pass specific number of rps which is easily used when calculating radians by integral.
   const actualGyroscopes = [
     mean(gyroscopes.map((g) => g[0].rps)),
     mean(gyroscopes.map((g) => g[1].rps)),
