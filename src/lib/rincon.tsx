@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef } from "react";
+import * as PacketParser from "@/lib/parse"
+import { responseCookiesToRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 
 export const useRingCon = (setBaseValue: (prev: number) => void) => {
   const connectedDeviceRef = useRef<HIDDevice | null>(null);
@@ -8,6 +10,39 @@ export const useRingCon = (setBaseValue: (prev: number) => void) => {
   const extractStrainValueFromBuffer = (buffer: ArrayBufferLike) => {
     return new DataView(buffer, 38, 2).getInt16(0, true);
   };
+
+
+  function getGyroscopes(buffer: ArrayBufferLike, reportId: number) {
+    const data = concatTypedArrays(new Uint8Array([reportId]), new Uint8Array(buffer))
+    const hexData = Array.from(data)
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join(" ");
+
+    if (reportId === 0x30) {
+      const gyroscopes = PacketParser.parseGyroscopes(data, hexData);
+      const rps = PacketParser.calculateActualGyroscope(
+        gyroscopes.map((g) => g.map((v) => v.rps) as [number, number, number])
+      );
+      const dps = PacketParser.calculateActualGyroscope(
+        gyroscopes.map((g) => g.map((v) => v.dps) as [number, number, number])
+      );
+      return { rps, dps}
+    }
+  }
+  
+
+  function getAccelerometers(buffer: ArrayBufferLike, reportId: number) {
+    const data = concatTypedArrays(new Uint8Array([reportId]), new Uint8Array(buffer))
+    const hexData = Array.from(data)
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join(" ");
+
+    if (reportId === 0x30) {
+      const accelerometers = PacketParser.parseAccelerometers(data, hexData);
+      const acc = PacketParser.calculateActualAccelerometer(accelerometers.map((ac) => [ac.x.acc, ac.y.acc, ac.z.acc]));
+      return { acc }
+    }
+  }
 
   const getConnectedDevice = () => connectedDeviceRef.current;
 
@@ -165,5 +200,14 @@ export const useRingCon = (setBaseValue: (prev: number) => void) => {
     await blinkLed(device);
   };
 
-  return { connectRingCon, extractStrainValueFromBuffer, getConnectedDevice };
+  return { connectRingCon, extractStrainValueFromBuffer, getConnectedDevice, getGyroscopes, getAccelerometers };
 };
+
+function concatTypedArrays<T extends Uint8Array>(a: T, b: T): T {
+  const c = new (Object.getPrototypeOf(a).constructor)(
+    a.length + b.length
+  ) as T;
+  c.set(a, 0);
+  c.set(b, a.length);
+  return c;
+}

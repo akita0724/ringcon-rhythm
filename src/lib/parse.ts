@@ -1,24 +1,6 @@
 // Many codes are cited from a library.
 // Refer to https://github.com/tomayac/joy-con-webhid/blob/main/src/parse.js
 
-type Accelerometer = {
-  _raw: Buffer;
-  _hex: Buffer;
-  acc: number;
-}
-
-type Accelerometers = Array<{ x: Accelerometer; y: Accelerometer; z: Accelerometer }>
-
-type Gyroscope = {
-  _raw: Buffer<ArrayBuffer>;
-  _hex: Buffer<ArrayBuffer>;
-  dps: number;
-  rps: number;
-}
-
-type Gyroscopes = Gyroscope[][]
-
-
 function baseSum<T>(array: T[], iteratee: (value: T) => number) {
   let result;
 
@@ -42,23 +24,23 @@ function baseMean<T>(array: T[], iteratee: (value: T) => number) {
 }
 
 
-function toAcceleration(value: Buffer): number {
+function toAcceleration(value: Uint8Array): number {
   const view = new DataView(value.buffer);
   return parseFloat((0.000244 * view.getInt16(0, true)).toFixed(6));
 }
 
-function toDegreesPerSecond(value: Buffer) {
+function toDegreesPerSecond(value: Uint8Array) {
   const view = new DataView(value.buffer);
   return parseFloat((0.06103 * view.getInt16(0, true)).toFixed(6));
 }
 
-function toRevolutionsPerSecond(value: Buffer) {
+function toRevolutionsPerSecond(value: Uint8Array) {
   const view = new DataView(value.buffer);
   return parseFloat((0.0001694 * view.getInt16(0, true)).toFixed(6));
 }
 
-export function parseAccelerometers(rawData: Buffer, data: Buffer) {
-  const accelerometers: Accelerometers = [
+export function parseAccelerometers(rawData: Uint8Array, data: string) {
+  const accelerometers = [
     {
       x: {
         _raw: rawData.slice(13, 15), // index 13,14
@@ -115,8 +97,8 @@ export function parseAccelerometers(rawData: Buffer, data: Buffer) {
   return accelerometers;
 }
 
-export function parseGyroscopes(rawData: Buffer, data: Buffer) {
-  const gyroscopes: Gyroscopes = [
+export function parseGyroscopes(rawData: Uint8Array, data: string) {
+  const gyroscopes = [
     [
       {
         _raw: rawData.slice(19, 21), // index 19,20
@@ -182,33 +164,31 @@ export function parseGyroscopes(rawData: Buffer, data: Buffer) {
   return gyroscopes;
 }
 
-export function calculateActualAccelerometer(accelerometers: Accelerometers) {
+export function calculateActualAccelerometer(accelerometers: [number, number, number][] ) {
   const elapsedTime = 0.005 * accelerometers.length; // Spent 5ms to collect each data.
 
   const actualAccelerometer = {
     x: parseFloat(
-      (mean(accelerometers.map((g) => g.x.acc)) * elapsedTime).toFixed(6)
+      (mean(accelerometers.map((g) => g[0])) * elapsedTime).toFixed(6)
     ),
     y: parseFloat(
-      (mean(accelerometers.map((g) => g.y.acc)) * elapsedTime).toFixed(6)
+      (mean(accelerometers.map((g) => g[1])) * elapsedTime).toFixed(6)
     ),
     z: parseFloat(
-      (mean(accelerometers.map((g) => g.z.acc)) * elapsedTime).toFixed(6)
+      (mean(accelerometers.map((g) => g[2])) * elapsedTime).toFixed(6)
     ),
   };
 
   return actualAccelerometer;
 }
 
-export function calculateActualGyroscope(gyroscopes: Gyroscopes) {
+export function calculateActualGyroscope(gyroscopes: [number, number, number][]) {
   const elapsedTime = 0.005 * gyroscopes.length; // Spent 5ms to collect each data.
 
-  // The initial codes pass only g[number], so it may cause some errors
-  // To cope with this problem, I pass specific number of rps which is easily used when calculating radians by integral.
   const actualGyroscopes = [
-    mean(gyroscopes.map((g) => g[0].rps)),
-    mean(gyroscopes.map((g) => g[1].rps)),
-    mean(gyroscopes.map((g) => g[2].rps)),
+    mean(gyroscopes.map((g) => g[0])),
+    mean(gyroscopes.map((g) => g[1])),
+    mean(gyroscopes.map((g) => g[2])),
   ].map((v) => parseFloat((v * elapsedTime).toFixed(6)));
 
   return {
