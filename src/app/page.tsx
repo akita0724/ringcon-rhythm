@@ -13,8 +13,9 @@ import {
   turnStartTimeAtom,
 } from "@/lib/atom";
 import { useAtom, useSetAtom } from "jotai";
-import { useRingCon } from "@/lib/rincon";
+import { igniteJoyCon, useRingConValues } from "@/lib/rincon";
 import { addNode } from "@/lib/addNode";
+import { connectJoyCon, connectedJoyCons  } from "joy-con-webhid";
 
 const NEUTRAL_STRAIN_RADIUS = 0x0200;
 const NEUTRAL_STRAIN_RADIUS_MARGIN = 0x0010;
@@ -32,47 +33,15 @@ export default function Home() {
   const setIsPressed = useSetAtom(isPlessedAtom);
   const [baseValue, setBaseValue] = useAtom(baseValueAtom);
 
-  const ringcon = useRingCon(setBaseValue);
-
-  // useEffect(() => {
-  //   const handleKeyDown = createHandleKeyDown(
-  //     turn,
-  //     startTime,
-  //     setStartTime,
-  //     nodes,
-  //     setNodes,
-  //     currentNode,
-  //     setCurrentNode,
-  //     setMissCount,
-  //     setTurn,
-  //   );
-
-  //   window.addEventListener("keydown", handleKeyDown);
-  //   console.log("Current node:", nodes);
-  //   console.log("Miss count:", missCount);
-
-  //   return () => window.removeEventListener("keydown", handleKeyDown);
-  // }, [
-  //   turn,
-  //   startTime,
-  //   nodes,
-  //   currentNode,
-  //   setStartTime,
-  //   setNodes,
-  //   setCurrentNode,
-  //   setMissCount,
-  //   missCount,
-  // ]);
-
   useEffect(() => {
-    const device = ringcon.getConnectedDevice();
-    if (!device || !connected) return;
+    const {rightController, leftController} = useRingConValues();
+    
+
 
     const handleInputReport = (event: HIDInputReportEvent) => {
       if (!connected) return;
-      if (event.reportId !== 0x30) return;
 
-      const data = ringcon.extractStrainValueFromBuffer(event.data.buffer);
+      const data = rightController.strain;
 
       setIsPressed((prev) => {
         if (prev) {
@@ -120,12 +89,7 @@ export default function Home() {
       });
     };
 
-    device.addEventListener("inputreport", handleInputReport);
-    return () => {
-      device.removeEventListener("inputreport", handleInputReport);
-    };
   }, [
-    ringcon,
     connected,
     baseValue,
     turn,
@@ -145,7 +109,7 @@ export default function Home() {
       <button
         hidden={connected}
         onClick={async () => {
-          await ringcon.connectRingCon();
+          await igniteJoyCon();
           setConnected(true);
         }}
       >
