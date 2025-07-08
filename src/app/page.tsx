@@ -35,8 +35,6 @@ export default function Home() {
 
   useEffect(() => {
     const {rightController, leftController} = useRingConValues();
-    
-
 
     const handleInputReport = (event: HIDInputReportEvent) => {
       if (!connected) return;

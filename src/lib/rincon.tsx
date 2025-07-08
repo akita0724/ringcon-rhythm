@@ -5,7 +5,9 @@ import { useEffect, useState } from "react";
 import { JoyConEvents, AnalogStick } from "joy-con-webhid";
 
 // Refer to https://github.com/tomayac/joy-con-webhid/blob/main/demo/webmidi.js
-// Especially, visualize function
+// especially, visualize function.
+// However, the codes may be obsolete since the developer didn't revise script by typescript.
+// We have to manage to convert context from js to ts by ourselves.
 
 const initialStickValue = {
   strain: 0,
@@ -37,7 +39,12 @@ export function useRingConValues() {
           }
           joyCon.eventListenerAttached = true;
           await joyCon.disableVibration();
+          
+          // [TODO] find correct event type.
+          // event type may be incorrect.
+          // please confirm the result of this code.
           joyCon.addEventListener('hidinput', (e: JoyConEvents) => {
+            console.log(e);
             const packet = e.hidinput.detail;
             if(!packet) return;
             const [isLeftStick, stickValue] = handleInput(joyCon, packet);
@@ -66,6 +73,7 @@ function handleInput(joyCon: JoyConLeft | JoyConRight, packet: JoyConDataPacket 
 
   const joystick = isLeftController ? packet.analogStickLeft : packet.analogStickRight;
 
+  // [TODO] resolve incompatibility of object types.
   const hor = joystick.horizontal;
   const ver = joystick.vertical;
   const acc = { x: actualAccelerometer.x, y: actualAccelerometer.y, z: actualAccelerometer.z };
