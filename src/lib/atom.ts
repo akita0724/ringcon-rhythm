@@ -20,6 +20,10 @@ const songInfoAtom = atom<{
   artist: "",
 });
 
+const connectedAtom = atom<boolean>(false);
+const isPlessedAtom = atom<boolean>(false);
+const baseValueAtom = atom<number>(0);
+
 export {
   isStartedAtom,
   turnAtom,
@@ -28,4 +32,7 @@ export {
   currentNodeAtom,
   nodesAtom,
   turnStartTimeAtom,
+  connectedAtom,
+  isPlessedAtom,
+  baseValueAtom,
 };
