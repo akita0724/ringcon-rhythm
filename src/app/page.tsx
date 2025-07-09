@@ -34,7 +34,7 @@ export default function Home() {
   const [baseValue, setBaseValue] = useAtom(baseValueAtom);
 
   useEffect(() => {
-    const {rightController, leftController} = useRingConValues();
+    const rightController = useRingConValues();
 
     const handleInputReport = (event: HIDInputReportEvent) => {
       if (!connected) return;

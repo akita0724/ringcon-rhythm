@@ -23,7 +23,6 @@ export async function igniteJoyCon() {
 
 export function useRingConValues() {
   const [rightController, setRightController] = useState(initialStickValue);
-  const [leftController, setLeftController] = useState(initialStickValue);
 
   useEffect(() => {
 
@@ -43,16 +42,13 @@ export function useRingConValues() {
           // [TODO] find correct event type.
           // event type may be incorrect.
           // please confirm the result of this code.
-          joyCon.addEventListener('hidinput', (e: JoyConEvents) => {
+          joyCon.addEventListener('hidinput', (e) => {
             console.log(e);
-            const packet = e.hidinput.detail;
-            if(!packet) return;
-            const [isLeftStick, stickValue] = handleInput(joyCon, packet);
-            if(isLeftStick) {
-              setLeftController(stickValue);
-            }else {
-              setRightController(stickValue);
-            }
+            const packet = e.detail as JoyConDataPacket;
+            if(!packet) return null;
+            if(!(joyCon instanceof JoyConRight)) return null;
+            const stickValue = handleInput(packet);
+            setRightController(stickValue);
           });
         }
       }, 2000);
@@ -60,18 +56,13 @@ export function useRingConValues() {
 
   }, []);
   
-  return {
-    rightController,
-    leftController,
-  }
+  return rightController;
 }
 
-function handleInput(joyCon: JoyConLeft | JoyConRight, packet: JoyConDataPacket ): [boolean, typeof initialStickValue]{
-  const isLeftController = joyCon instanceof JoyConLeft;
-
+function handleInput(packet: JoyConDataPacket ): typeof initialStickValue {
   const { actualAccelerometer, actualGyroscope, ringCon } = packet;
 
-  const joystick = isLeftController ? packet.analogStickLeft : packet.analogStickRight;
+  const joystick = packet.analogStickRight;
 
   // [TODO] resolve incompatibility of object types.
   const hor = joystick.horizontal;
@@ -80,7 +71,7 @@ function handleInput(joyCon: JoyConLeft | JoyConRight, packet: JoyConDataPacket 
   const gyro = { x: actualGyroscope.rps.x, y: actualGyroscope.rps.y, z: actualGyroscope.rps.z };
   const strain = ringCon.strain;
 
-  return [isLeftController, {
+  return {
     strain, hor, ver, acc, gyro,
-  }];
+  };
 }
