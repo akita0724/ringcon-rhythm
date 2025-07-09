@@ -15,7 +15,6 @@ import {
 import { useAtom, useSetAtom } from "jotai";
 import { igniteJoyCon, useRingConValues } from "@/lib/rincon";
 import { addNode } from "@/lib/addNode";
-import { connectJoyCon, connectedJoyCons  } from "joy-con-webhid";
 
 const NEUTRAL_STRAIN_RADIUS = 0x0200;
 const NEUTRAL_STRAIN_RADIUS_MARGIN = 0x0010;
