@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { Right_Turn, Left_Turn , Info , /*Line*/} from "@/components/turn";
+import { RightTurn, LeftTurn , Info } from "@/components/turn";
+import { FinishedNodes } from "@/components/info";
 import {
   currentNodeAtom,
   missCountAtom,
@@ -11,7 +12,7 @@ import {
 } from "@/lib/atom";
 import { useAtom } from "jotai";
 import { createHandleKeyDown } from "@/lib/handleInput";
-//import { Info } from "@/components/info";
+
 
 export default function Home() {
   const [turn, setTurn] = useAtom(turnAtom);
@@ -52,10 +53,10 @@ export default function Home() {
 
   return (
     <div>
-      <Right_Turn  />
-      <Left_Turn />
+      <RightTurn  />
+      <LeftTurn />
       <Info />
-      {/*<Line />*/}
+      <FinishedNodes />
     </div>
   );
 }

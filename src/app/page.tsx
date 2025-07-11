@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Right_Turn, Left_Turn } from "@/components/turn";
+import { RightTurn, LeftTurn } from "@/components/turn";
 import {
   baseValueAtom,
   connectedAtom,
@@ -15,7 +15,6 @@ import {
 import { useAtom, useSetAtom } from "jotai";
 import { useRingCon } from "@/lib/rincon";
 import { addNode } from "@/lib/addNode";
-import { Info } from "@/components/info";
 
 const NEUTRAL_STRAIN_RADIUS = 0x0200;
 const NEUTRAL_STRAIN_RADIUS_MARGIN = 0x0010;
@@ -143,7 +142,7 @@ export default function Home() {
   return (
     <div>
       
-      <Right_Turn/>
+      <RightTurn/>
       <button
         hidden={connected}
         onClick={async () => {
@@ -153,8 +152,8 @@ export default function Home() {
       >
         リングコンに接続する
       </button>
-      <Left_Turn/>
-      {/* <Info /> */}
+      <LeftTurn/>
+    
     </div>
   );
 }
