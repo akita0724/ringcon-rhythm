@@ -1,3 +1,5 @@
+"use client";
+
 import { useStepper } from "@/lib/hooks/stepper";
 import { Button, Container, Typography } from "@mui/material";
 

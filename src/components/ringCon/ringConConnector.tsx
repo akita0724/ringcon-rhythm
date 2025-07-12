@@ -1,3 +1,5 @@
+"use client";
+
 import { connectedAtom } from "@/lib/atom";
 import { useStepper } from "@/lib/hooks/stepper";
 import { igniteJoyCon } from "@/lib/rincon";

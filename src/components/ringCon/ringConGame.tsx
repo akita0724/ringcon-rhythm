@@ -1,3 +1,5 @@
+"use client";
+
 import { useStepper } from "@/lib/hooks/stepper";
 import { Container } from "@mui/material";
 import { useEffect } from "react";
