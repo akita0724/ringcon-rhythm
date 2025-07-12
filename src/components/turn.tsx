@@ -1,15 +1,13 @@
+import { MissLimit } from "@/consts/constraints";
 import { missCountAtom, turnAtom , nodesAtom } from "@/lib/atom";
 import { useAtomValue } from "jotai";
-
-const MISS_LIMIT = 50; // ミスの上限
-
 
 export const RightTurn = () => {
   const turn = useAtomValue(turnAtom);
   const missCount = useAtomValue(missCountAtom);
   return (
     <div
-      style={{ height: `${(1-missCount[1] / MISS_LIMIT) * 80}%` , backgroundColor: turn === 1 ? "#326bcd": "#CADBFE"}}
+      style={{ height: `${(1-missCount[1] / MissLimit) * 80}%` , backgroundColor: turn === 1 ? "#326bcd": "#CADBFE"}}
       className="flex flex-col items-center justify-center absolute right-0 bottom-0 w-1/3 z-20 border-t-8"
     />
   );
@@ -20,7 +18,7 @@ export const LeftTurn = () => {
   const missCount = useAtomValue(missCountAtom);
   return (
     <div
-      style={{ height: `${(1-missCount[0] / MISS_LIMIT) * 80}%` ,backgroundColor: turn === -1 ? "#f04c4c": "#FCA5A5"}}
+      style={{ height: `${(1-missCount[0] / MissLimit) * 80}%` ,backgroundColor: turn === -1 ? "#f04c4c": "#FCA5A5"}}
       className="flex flex-col items-center justify-center absolute left-0 bottom-0 w-1/3 z-20 border-t-8"
     />
   );
@@ -31,7 +29,7 @@ export const Info = () => {
 
     const nodes = useAtomValue(nodesAtom)
     
-    const remainMissCount = [MISS_LIMIT-missCount[0], MISS_LIMIT-missCount[1]];
+    const remainMissCount = [MissLimit-missCount[0], MissLimit-missCount[1]];
 
 
     

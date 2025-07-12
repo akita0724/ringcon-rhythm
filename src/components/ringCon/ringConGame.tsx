@@ -102,6 +102,10 @@ export default function AlternatePlay( ) {
     setTurn,
   ]);
 
+  if (nodes.length === currentNode) {
+    handleNext();
+  }
+
   return (
     <Container>
       <LeftTurn />
