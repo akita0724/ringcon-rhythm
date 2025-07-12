@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Right_Turn, Left_Turn } from "@/components/turn";
+import { RightTurn, LeftTurn } from "@/components/turn";
 import {
   baseValueAtom,
   connectedAtom,
@@ -102,7 +102,8 @@ export default function Home() {
 
   return (
     <div>
-      <Right_Turn turn={turn} />
+      
+      <RightTurn/>
       <button
         hidden={connected}
         onClick={async () => {
@@ -112,8 +113,8 @@ export default function Home() {
       >
         リングコンに接続する
       </button>
-      <Left_Turn turn={turn} />
-      {/* <Info /> */}
+      <LeftTurn/>
+    
     </div>
   );
 }
