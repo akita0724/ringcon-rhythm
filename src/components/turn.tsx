@@ -1,5 +1,5 @@
 import { MissLimit } from "@/consts/constraints";
-import { missCountAtom, turnAtom , nodesAtom } from "@/lib/atom";
+import { missCountAtom, turnAtom , nodesAtom, playerNames } from "@/lib/atom";
 import { useAtomValue } from "jotai";
 
 export const RightTurn = () => {
@@ -25,12 +25,12 @@ export const LeftTurn = () => {
 };
 
 export const Info = () => {
-    const missCount = useAtomValue(missCountAtom)
+    const missCount = useAtomValue(missCountAtom);
+    const [first, second] = useAtomValue(playerNames);
 
     const nodes = useAtomValue(nodesAtom)
     
     const remainMissCount = [MissLimit-missCount[0], MissLimit-missCount[1]];
-
 
     
     return (
@@ -40,10 +40,10 @@ export const Info = () => {
             Lv.{nodes.length}
         </h1>
         <p className="text-6xl mb-2 justify-center text-center items-center z-30 absolute left-0 w-1/3 top-7 h-20">
-            {remainMissCount[0] > 0 ? remainMissCount[0] : "GAMEOVER"}
+            {first}: {remainMissCount[0] > 0 ? remainMissCount[0] : "GAMEOVER"}
         </p>
         <p  className="text-6xl mb-2 justify-center text-center items-center z-30 absolute right-0 w-1/3 top-7 h-20">
-            {remainMissCount[1] > 0 ? remainMissCount[1] : "GAMEOVER"}
+            {second}: {remainMissCount[1] > 0 ? remainMissCount[1] : "GAMEOVER"}
         </p>
     </div>
     )
