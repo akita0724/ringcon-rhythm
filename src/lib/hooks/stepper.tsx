@@ -14,7 +14,6 @@ export function useStepper() {
 
   return {
     activeStep,
-    setActiveStep,
     handleNext,
     handleReset,
   };

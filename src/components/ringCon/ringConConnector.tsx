@@ -4,18 +4,16 @@ import { connectedAtom } from "@/lib/atom";
 import { useRegistration } from "@/lib/hooks/registration";
 import { useStepper } from "@/lib/hooks/stepper";
 import { igniteJoyCon } from "@/lib/rincon";
-import { Input, Container, Typography, Button } from "@mui/material";
-import { useAtom, useSetAtom } from "jotai";
-import { useEffect } from "react";
+import { Container, Typography, Button } from "@mui/material";
+import { useSetAtom } from "jotai";
 
 export default function Connector() {
-  const { handleNext, activeStep, setActiveStep } = useStepper();
-  const [connected, setConnected] = useAtom(connectedAtom);
+  const { handleNext } = useStepper();
+  const setConnected = useSetAtom(connectedAtom);
   const { PlayerRegistrationForm, isRegistered } = useRegistration();
 
   async function changeHandler() {
     await igniteJoyCon();
-    console.log(activeStep);
     setConnected(true);
     handleNext();
   }

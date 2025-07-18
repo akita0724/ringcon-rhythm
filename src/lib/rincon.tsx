@@ -45,9 +45,6 @@ export function useRingConValues() {
           joyCon.eventListenerAttached = true;
           await joyCon.enableRingCon();
 
-          // [TODO] find correct event type.
-          // event type may be incorrect.
-          // please confirm the result of this code.
           joyCon.addEventListener("hidinput", (e) => {
             const packet = e.detail as JoyConDataPacket;
             if (!packet) return null;
