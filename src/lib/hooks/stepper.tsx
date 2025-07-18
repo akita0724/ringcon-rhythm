@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { activeStepAtom } from "@/lib/atom";
+import { useAtom } from "jotai";
 
 export function useStepper() {
-  const [activeStep, setActiveStep] = useState(0);
-  
+  const [activeStep, setActiveStep] = useAtom(activeStepAtom);
+
   function handleNext() {
     setActiveStep((prev) => prev + 1);
   }
@@ -13,7 +14,8 @@ export function useStepper() {
 
   return {
     activeStep,
+    setActiveStep,
     handleNext,
-    handleReset
+    handleReset,
   };
 }

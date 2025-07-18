@@ -1,6 +1,12 @@
 "use client";
 
-import { connectedJoyCons, connectJoyCon, JoyConDataPacket, JoyConLeft, JoyConRight } from "joy-con-webhid";
+import {
+  connectedJoyCons,
+  connectJoyCon,
+  JoyConDataPacket,
+  JoyConLeft,
+  JoyConRight,
+} from "joy-con-webhid";
 import { useEffect, useState } from "react";
 import { JoyConEvents, AnalogStick } from "joy-con-webhid";
 
@@ -14,7 +20,7 @@ const initialStickValue = {
   hor: 0,
   ver: 0,
   acc: { x: 0, y: 0, z: 0 },
-  gyro: { x: 0, y: 0, z: 0 }
+  gyro: { x: 0, y: 0, z: 0 },
 };
 
 export async function igniteJoyCon() {
@@ -25,10 +31,9 @@ export function useRingConValues() {
   const [rightController, setRightController] = useState(initialStickValue);
 
   useEffect(() => {
-
-    (async() => {
-      await listenReport()
-    })()
+    (async () => {
+      await listenReport();
+    })();
 
     async function listenReport() {
       setInterval(async () => {
@@ -37,29 +42,28 @@ export function useRingConValues() {
             continue;
           }
           joyCon.eventListenerAttached = true;
-          await joyCon.disableVibration();
-          
+          await joyCon.enableRingCon();
+
           // [TODO] find correct event type.
           // event type may be incorrect.
           // please confirm the result of this code.
-          joyCon.addEventListener('hidinput', (e) => {
-            console.log(e);
+          joyCon.addEventListener("hidinput", (e) => {
+            console.log(e.detail);
             const packet = e.detail as JoyConDataPacket;
-            if(!packet) return null;
-            if(!(joyCon instanceof JoyConRight)) return null;
+            if (!packet) return null;
+            if (!(joyCon instanceof JoyConRight)) return null;
             const stickValue = handleInput(packet);
             setRightController(stickValue);
           });
         }
       }, 2000);
     }
-
   }, []);
-  
+
   return rightController;
 }
 
-function handleInput(packet: JoyConDataPacket ): typeof initialStickValue {
+function handleInput(packet: JoyConDataPacket): typeof initialStickValue {
   const { actualAccelerometer, actualGyroscope, ringCon } = packet;
 
   const joystick = packet.analogStickRight;
@@ -67,11 +71,23 @@ function handleInput(packet: JoyConDataPacket ): typeof initialStickValue {
   // [TODO] resolve incompatibility of object types.
   const hor = joystick.horizontal;
   const ver = joystick.vertical;
-  const acc = { x: actualAccelerometer.x, y: actualAccelerometer.y, z: actualAccelerometer.z };
-  const gyro = { x: actualGyroscope.rps.x, y: actualGyroscope.rps.y, z: actualGyroscope.rps.z };
+  const acc = {
+    x: actualAccelerometer.x,
+    y: actualAccelerometer.y,
+    z: actualAccelerometer.z,
+  };
+  const gyro = {
+    x: actualGyroscope.rps.x,
+    y: actualGyroscope.rps.y,
+    z: actualGyroscope.rps.z,
+  };
   const strain = ringCon.strain;
 
   return {
-    strain, hor, ver, acc, gyro,
+    strain,
+    hor,
+    ver,
+    acc,
+    gyro,
   };
 }

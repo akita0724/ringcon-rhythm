@@ -21,7 +21,7 @@ import { addNode } from "@/lib/addNode";
 const NEUTRAL_STRAIN_RADIUS = 0x0200;
 const NEUTRAL_STRAIN_RADIUS_MARGIN = 0x0010;
 
-export default function AlternatePlay( ) {
+export default function AlternatePlay() {
   const { handleNext } = useStepper();
 
   // 1が右の人、-1が左の人のターン
@@ -36,9 +36,9 @@ export default function AlternatePlay( ) {
   const setIsPressed = useSetAtom(isPlessedAtom);
   const [baseValue, setBaseValue] = useAtom(baseValueAtom);
 
-  useEffect(() => {
-    const rightController = useRingConValues();
+  const rightController = useRingConValues();
 
+  useEffect(() => {
     const handleInputReport = (event: HIDInputReportEvent) => {
       if (!connected) return;
 
@@ -89,7 +89,6 @@ export default function AlternatePlay( ) {
         return false;
       });
     };
-
   }, [
     connected,
     baseValue,
@@ -102,11 +101,15 @@ export default function AlternatePlay( ) {
     setCurrentNode,
     setMissCount,
     setTurn,
+    rightController.strain,
   ]);
 
-  if (nodes.length === currentNode) {
-    handleNext();
-  }
+  // ゲーム終了判定をuseEffectに移動
+  useEffect(() => {
+    if (nodes.length !== 0 && nodes.length === currentNode) {
+      handleNext();
+    }
+  }, [nodes.length, currentNode, handleNext]);
 
   return (
     <Container>

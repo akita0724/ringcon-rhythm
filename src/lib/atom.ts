@@ -25,6 +25,7 @@ const songInfoAtom = atom<{
 const connectedAtom = atom<boolean>(false);
 const isPlessedAtom = atom<boolean>(false);
 const baseValueAtom = atom<number>(0);
+const activeStepAtom = atom<number>(0);
 
 export {
   isStartedAtom,
@@ -38,4 +39,5 @@ export {
   isPlessedAtom,
   baseValueAtom,
   playerNames,
+  activeStepAtom,
 };
