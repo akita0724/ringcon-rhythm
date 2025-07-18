@@ -6,6 +6,7 @@ import {
   JoyConDataPacket,
   JoyConLeft,
   JoyConRight,
+  RingConDataPacket,
 } from "joy-con-webhid";
 import { useEffect, useState } from "react";
 import { JoyConEvents, AnalogStick } from "joy-con-webhid";
@@ -48,7 +49,6 @@ export function useRingConValues() {
           // event type may be incorrect.
           // please confirm the result of this code.
           joyCon.addEventListener("hidinput", (e) => {
-            console.log(e.detail);
             const packet = e.detail as JoyConDataPacket;
             if (!packet) return null;
             if (!(joyCon instanceof JoyConRight)) return null;
@@ -64,13 +64,14 @@ export function useRingConValues() {
 }
 
 function handleInput(packet: JoyConDataPacket): typeof initialStickValue {
-  const { actualAccelerometer, actualGyroscope, ringCon } = packet;
+  const { actualAccelerometer, actualGyroscope } = packet;
 
-  const joystick = packet.analogStickRight;
+  const joystick = packet.analogStickRight as AnalogStick;
 
   // [TODO] resolve incompatibility of object types.
-  const hor = joystick.horizontal;
-  const ver = joystick.vertical;
+
+  const hor = Number(joystick.horizontal);
+  const ver = Number(joystick.vertical);
   const acc = {
     x: actualAccelerometer.x,
     y: actualAccelerometer.y,
@@ -81,6 +82,7 @@ function handleInput(packet: JoyConDataPacket): typeof initialStickValue {
     y: actualGyroscope.rps.y,
     z: actualGyroscope.rps.z,
   };
+  const ringCon = packet.ringCon as RingConDataPacket;
   const strain = ringCon.strain;
 
   return {
