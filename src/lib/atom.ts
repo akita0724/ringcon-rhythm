@@ -9,6 +9,8 @@ const turnStartTimeAtom = atom<Date | null>(null);
 const missCountAtom = atom<[number, number]>([0, 0]);
 const currentNodeAtom = atom<number>(0);
 
+const playerNames = atom<[string, string]>(["", ""]);
+
 // 初期ノードからの経過時間(ms)を管理する
 const nodesAtom = atom<Node[]>([]);
 
@@ -23,6 +25,7 @@ const songInfoAtom = atom<{
 const connectedAtom = atom<boolean>(false);
 const isPlessedAtom = atom<boolean>(false);
 const baseValueAtom = atom<number>(0);
+const activeStepAtom = atom<number>(0);
 
 export {
   isStartedAtom,
@@ -35,4 +38,6 @@ export {
   connectedAtom,
   isPlessedAtom,
   baseValueAtom,
+  playerNames,
+  activeStepAtom,
 };

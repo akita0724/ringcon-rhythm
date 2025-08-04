@@ -1,15 +1,13 @@
-import { missCountAtom, turnAtom , nodesAtom } from "@/lib/atom";
+import { MissLimit } from "@/consts/constraints";
+import { missCountAtom, turnAtom , nodesAtom, playerNames } from "@/lib/atom";
 import { useAtomValue } from "jotai";
-
-const MISS_LIMIT = 50; // ミスの上限
-
 
 export const RightTurn = () => {
   const turn = useAtomValue(turnAtom);
   const missCount = useAtomValue(missCountAtom);
   return (
     <div
-      style={{ height: `${(1-missCount[1] / MISS_LIMIT) * 80}%` , backgroundColor: turn === 1 ? "#326bcd": "#CADBFE"}}
+      style={{ height: `${(1-missCount[1] / MissLimit) * 80}%` , backgroundColor: turn === 1 ? "#326bcd": "#CADBFE"}}
       className="flex flex-col items-center justify-center absolute right-0 bottom-0 w-1/3 z-20 border-t-8"
     />
   );
@@ -20,19 +18,19 @@ export const LeftTurn = () => {
   const missCount = useAtomValue(missCountAtom);
   return (
     <div
-      style={{ height: `${(1-missCount[0] / MISS_LIMIT) * 80}%` ,backgroundColor: turn === -1 ? "#f04c4c": "#FCA5A5"}}
+      style={{ height: `${(1-missCount[0] / MissLimit) * 80}%` ,backgroundColor: turn === -1 ? "#f04c4c": "#FCA5A5"}}
       className="flex flex-col items-center justify-center absolute left-0 bottom-0 w-1/3 z-20 border-t-8"
     />
   );
 };
 
 export const Info = () => {
-    const missCount = useAtomValue(missCountAtom)
+    const missCount = useAtomValue(missCountAtom);
+    const [first, second] = useAtomValue(playerNames);
 
     const nodes = useAtomValue(nodesAtom)
     
-    const remainMissCount = [MISS_LIMIT-missCount[0], MISS_LIMIT-missCount[1]];
-
+    const remainMissCount = [MissLimit-missCount[0], MissLimit-missCount[1]];
 
     
     return (
@@ -42,10 +40,10 @@ export const Info = () => {
             Lv.{nodes.length}
         </h1>
         <p className="text-6xl mb-2 justify-center text-center items-center z-30 absolute left-0 w-1/3 top-7 h-20">
-            {remainMissCount[0] > 0 ? remainMissCount[0] : "GAMEOVER"}
+            {first}: {remainMissCount[0] > 0 ? remainMissCount[0] : "GAMEOVER"}
         </p>
         <p  className="text-6xl mb-2 justify-center text-center items-center z-30 absolute right-0 w-1/3 top-7 h-20">
-            {remainMissCount[1] > 0 ? remainMissCount[1] : "GAMEOVER"}
+            {second}: {remainMissCount[1] > 0 ? remainMissCount[1] : "GAMEOVER"}
         </p>
     </div>
     )
