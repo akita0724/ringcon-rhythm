@@ -18,6 +18,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useRingConValues } from "@/lib/rincon";
 import { addNode } from "@/lib/addNode";
 import { extractCommand } from "@/lib/extractCommand";
+import { MissLimit } from "@/consts/constraints";
 
 const NEUTRAL_STRAIN_RADIUS = 0x0200;
 const NEUTRAL_STRAIN_RADIUS_MARGIN = 0x0010;
@@ -32,10 +33,10 @@ export default function AlternatePlay() {
   const [startTime, setStartTime] = useAtom(turnStartTimeAtom);
   const [currentNode, setCurrentNode] = useAtom(currentNodeAtom);
   // ミス数の配列 [左, 右]
-  const [_missCount, setMissCount] = useAtom(missCountAtom);
+  const [missCount, setMissCount] = useAtom(missCountAtom);
   const connected = useAtomValue(connectedAtom);
   const setIsPressed = useSetAtom(isPlessedAtom);
-  const [_baseValue, _setBaseValue] = useAtom(baseValueAtom);
+  const [, _setBaseValue] = useAtom(baseValueAtom);
 
   const rightController = useRingConValues();
 
@@ -98,11 +99,11 @@ export default function AlternatePlay() {
 
   // ゲーム終了判定をuseEffectに移動
   useEffect(() => {
-    if (nodes.length !== 0 && nodes.length === currentNode) {
+    if (MissLimit-missCount[0] <= 0 || MissLimit-missCount[1] <= 0) {
       // If this function is properly called just once, you can call this without passing any number.
       handleNext(2);
     }
-  }, [nodes.length, currentNode, handleNext]);
+  }, [missCount]);
 
   return (
     <Box>
