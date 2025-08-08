@@ -17,6 +17,7 @@ import {
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useRingConValues } from "@/lib/rincon";
 import { addNode } from "@/lib/addNode";
+import { extractCommand } from "@/lib/extractCommand";
 
 const NEUTRAL_STRAIN_RADIUS = 0x0200;
 const NEUTRAL_STRAIN_RADIUS_MARGIN = 0x0010;
@@ -34,64 +35,56 @@ export default function AlternatePlay() {
   const [_missCount, setMissCount] = useAtom(missCountAtom);
   const connected = useAtomValue(connectedAtom);
   const setIsPressed = useSetAtom(isPlessedAtom);
-  const [baseValue, setBaseValue] = useAtom(baseValueAtom);
+  const [_baseValue, _setBaseValue] = useAtom(baseValueAtom);
 
   const rightController = useRingConValues();
 
+  // Ring-Con の接続状態とデータをログ出力
   useEffect(() => {
-    const handleInputReport = (event: HIDInputReportEvent) => {
-      if (!connected) return;
+    console.log("Ring-Con connected:", connected);
+    console.log("Ring-Con controller data:", rightController);
 
-      const data = rightController.strain;
+    // Ring-Conのデータを定期的にチェック
+    const interval = setInterval(() => {
+      if (connected && rightController) {
+        console.log("Periodic Ring-Con data check:", rightController);
+        const command = extractCommand(rightController);
+        console.log("Periodic command extraction:", command);
+      }
+    }, 1000);
 
-      setIsPressed((prev) => {
-        if (prev) {
-          if (
-            baseValue - NEUTRAL_STRAIN_RADIUS + NEUTRAL_STRAIN_RADIUS_MARGIN <=
-              data &&
-            data <=
-              baseValue + NEUTRAL_STRAIN_RADIUS - NEUTRAL_STRAIN_RADIUS_MARGIN
-          ) {
-            return false;
-          }
-          return true;
-        }
+    return () => clearInterval(interval);
+  }, [connected, rightController]);
 
-        if (data < baseValue - NEUTRAL_STRAIN_RADIUS) {
-          addNode(
-            1,
-            turn,
-            startTime,
-            setStartTime,
-            nodes,
-            setNodes,
-            currentNode,
-            setCurrentNode,
-            setMissCount,
-            setTurn,
-          );
-          return true;
-        } else if (data > baseValue + NEUTRAL_STRAIN_RADIUS) {
-          addNode(
-            2,
-            turn,
-            startTime,
-            setStartTime,
-            nodes,
-            setNodes,
-            currentNode,
-            setCurrentNode,
-            setMissCount,
-            setTurn,
-          );
-          return true;
-        }
-        return false;
-      });
-    };
+  // Ring-Conデータの変化を監視してコマンドを抽出
+  useEffect(() => {
+    if (!connected) return;
+
+    console.log("Ring-Con Data:", rightController);
+    const command = extractCommand(rightController);
+    console.log("Extracted Command:", command);
+
+    if (command !== 0) {
+      console.log("Non-zero command detected:", command);
+      setIsPressed(true);
+      addNode(
+        command,
+        turn,
+        startTime,
+        setStartTime,
+        nodes,
+        setNodes,
+        currentNode,
+        setCurrentNode,
+        setMissCount,
+        setTurn,
+      );
+    } else {
+      setIsPressed(false);
+    }
   }, [
+    rightController,
     connected,
-    baseValue,
     turn,
     startTime,
     setStartTime,
@@ -101,7 +94,6 @@ export default function AlternatePlay() {
     setCurrentNode,
     setMissCount,
     setTurn,
-    rightController.strain,
   ]);
 
   // ゲーム終了判定をuseEffectに移動
