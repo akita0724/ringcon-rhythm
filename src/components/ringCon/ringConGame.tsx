@@ -144,6 +144,7 @@ export default function AlternatePlay() {
 }
 
 function toNumericalQuaternion(value: {alpha: string, beta: string, gamma: string}): [number, number, number] {
+  // [TODO] Check how to convert from string to number.
   return [
     Number(value.alpha),
     Number(value.beta),
