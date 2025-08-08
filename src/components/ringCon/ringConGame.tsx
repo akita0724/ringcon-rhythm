@@ -1,8 +1,8 @@
 "use client";
 
 import { useStepper } from "@/lib/hooks/stepper";
-import { alpha, Box } from "@mui/material";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Box } from "@mui/material";
+import { useEffect, useState } from "react";
 import { RightTurn, LeftTurn } from "@/components/turn";
 import {
   baseValueAtom,
@@ -15,11 +15,13 @@ import {
   turnStartTimeAtom,
 } from "@/lib/atom";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { RingConInitialStickValue, useRingConValues } from "@/lib/rincon";
+import { useRingConValues } from "@/lib/rincon";
 import { addNode } from "@/lib/addNode";
-import { extractCommand } from "@/lib/extractCommand";
 import { MissLimit } from "@/consts/constraints";
 
+// Make buffer to prevent the joy-con from detecting minor movement since players don't intend it to start with just touch.
+// Make the function detect movement both for pressing and pulling.
+// Refer to https://github.com/mascii/demo-of-ring-con-with-web-hid/blob/main/index.html
 const NEUTRAL_STRAIN = 3000;
 const NEUTRAL_STRAIN_RADIUS = 1024;
 const NEUTRAL_STRAIN_RADIUS_MARGIN = 16;
@@ -38,7 +40,7 @@ export default function AlternatePlay() {
   const connected = useAtomValue(connectedAtom);
   const setIsPressed = useSetAtom(isPlessedAtom);
   const [, _setBaseValue] = useAtom(baseValueAtom);
-  // 各サイクルごとに値を取得
+  // Gain values per cycle.
   const [isMoving, setIsMoving] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
   const [strainValues, setStrainValues] = useState<number[]>([]);
@@ -51,40 +53,36 @@ export default function AlternatePlay() {
   useEffect(() => {
 
     if (isMoving) {
-      // 継続中 → 値を記録
+      // Continuation → Record values.
       setStrainValues((prev) => [...prev, strain]);
 
-      // 中立域に戻ったら押し終了
+      // Finish when it goes back to neutral area.
       if (NEUTRAL_STRAIN - NEUTRAL_STRAIN_RADIUS + NEUTRAL_STRAIN_RADIUS_MARGIN <= strain &&
           strain <= NEUTRAL_STRAIN + NEUTRAL_STRAIN_RADIUS - NEUTRAL_STRAIN_RADIUS_MARGIN) {
 
-        // 押し終わり時に max を求める
         const peakStrain = isPulling ? Math.min(...strainValues) : Math.max(...strainValues)
         setStrainPerCycle(peakStrain);
-
         const index = strainValues.indexOf(peakStrain);
         setQuaternionPerCycle(quaternionValues[index]);
 
         setIsMoving(false);
         setIsPulling(false);
-
-        // バッファをリセット
         setStrainValues([]); 
         setQuaternionValues([]);
       }
     } else {
-      // 始め検出
+      // Detect the beginning of the movement.
       if (strain < NEUTRAL_STRAIN - NEUTRAL_STRAIN_RADIUS) {
         setIsMoving(true);
         setIsPulling(true);
 
-        // 新しい引きの記録開始
+        // Start to record new pulling.
         setStrainValues([strain]);
         setQuaternionValues([toNumericalQuaternion(quaternion)]) 
       } else if (NEUTRAL_STRAIN + NEUTRAL_STRAIN_RADIUS < strain) {
         setIsMoving(true);
 
-        // 新しい押しの記録開始
+        // Start to record new pressing.
         setStrainValues([strain]) 
         setQuaternionValues([toNumericalQuaternion(quaternion)]) 
       }
