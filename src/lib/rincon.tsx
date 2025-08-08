@@ -21,6 +21,8 @@ const initialStickValue = {
   ver: 0,
   acc: { x: 0, y: 0, z: 0 },
   gyro: { x: 0, y: 0, z: 0 },
+  quaternion: {alpha: "", beta: "", gamma: "", },
+  rawQuaternion: { x: 0, y: 0, z: 0, w: 0 }
 };
 
 // [TODO] Check if the size of joy cons are immediately reflected.
@@ -62,24 +64,13 @@ export function useRingConValues() {
 }
 
 function handleInput(packet: JoyConDataPacket): typeof initialStickValue {
-  const { actualAccelerometer, actualGyroscope } = packet;
+  const { actualAccelerometer, actualGyroscope, actualOrientationQuaternion, quaternion } = packet;
 
   const joystick = packet.analogStickRight as AnalogStick;
 
-  // [TODO] resolve incompatibility of object types.
-
   const hor = Number(joystick.horizontal);
   const ver = Number(joystick.vertical);
-  const acc = {
-    x: actualAccelerometer.x,
-    y: actualAccelerometer.y,
-    z: actualAccelerometer.z,
-  };
-  const gyro = {
-    x: actualGyroscope.rps.x,
-    y: actualGyroscope.rps.y,
-    z: actualGyroscope.rps.z,
-  };
+  
   const ringCon = packet.ringCon as RingConDataPacket;
   const strain = ringCon.strain;
 
@@ -87,7 +78,9 @@ function handleInput(packet: JoyConDataPacket): typeof initialStickValue {
     strain,
     hor,
     ver,
-    acc,
-    gyro,
+    acc: actualAccelerometer,
+    gyro: actualGyroscope.rps,
+    quaternion: actualOrientationQuaternion,
+    rawQuaternion: quaternion
   };
 }
