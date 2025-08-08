@@ -15,13 +15,13 @@ import { AnalogStick } from "joy-con-webhid";
 // However, the codes may be obsolete since the developer didn't revise script by typescript.
 // We have to manage to convert context from js to ts by ourselves.
 
-const initialStickValue = {
+export const RingConInitialStickValue = {
   strain: 0,
   hor: 0,
   ver: 0,
   acc: { x: 0, y: 0, z: 0 },
   gyro: { x: 0, y: 0, z: 0 },
-  quaternion: {alpha: "", beta: "", gamma: "", },
+  quaternion: { alpha: "", beta: "", gamma: "", },
   rawQuaternion: { x: 0, y: 0, z: 0, w: 0 }
 };
 
@@ -32,7 +32,7 @@ export async function igniteJoyCon() {
 }
 
 export function useRingConValues() {
-  const [rightController, setRightController] = useState(initialStickValue);
+  const [rightController, setRightController] = useState(RingConInitialStickValue);
 
   useEffect(() => {
     (async () => {
@@ -63,7 +63,7 @@ export function useRingConValues() {
   return rightController;
 }
 
-function handleInput(packet: JoyConDataPacket): typeof initialStickValue {
+function handleInput(packet: JoyConDataPacket): typeof RingConInitialStickValue {
   const { actualAccelerometer, actualGyroscope, actualOrientationQuaternion, quaternion } = packet;
 
   const joystick = packet.analogStickRight as AnalogStick;

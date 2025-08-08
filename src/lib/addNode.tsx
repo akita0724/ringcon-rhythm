@@ -1,7 +1,8 @@
 import { Node } from "@/types/node";
 
 export const addNode = function (
-  input: number,
+  strain: number,
+  quaternion: [number, number, number],
   turn: number,
   startTime: Date | null,
   setStartTime: (time: Date | null) => void,
@@ -31,7 +32,8 @@ export const addNode = function (
   // 末尾の場合
   if (currentNode >= nodes.length) {
     const newNode: Node = {
-      input: input,
+      strain,
+      quaternion,
       time: elapsedTime,
     };
     setNodes((prev) => [...prev, newNode]);
@@ -40,7 +42,7 @@ export const addNode = function (
     setStartTime(null);
   } else {
     setCurrentNode((prev) => prev + 1);
-    if (judgeNode(input, nodes[currentNode], elapsedTime)) {
+    if (judgeNode(strain, quaternion, nodes[currentNode], elapsedTime)) {
       // OKの場合
     } else {
       // NGの場合
@@ -54,12 +56,16 @@ export const addNode = function (
 };
 
 // 誤差の許容範囲
-const tolerance = 100;
+const timeTolerance = 100;
+const strainTolerance = 128;
+const degreeTolerance = 45;
 
-const judgeNode = (input: number, node: Node, elapsedTime: number): boolean => {
-  return (
-    node.input === input &&
-    elapsedTime >= node.time - tolerance &&
-    elapsedTime <= node.time + tolerance
-  );
+const judgeNode = (strain:number, quaternion: [number, number, number], node: Node, elapsedTime: number): boolean => {
+  const properStrain =  node.strain - strainTolerance <= strain && strain <= node.strain + strainTolerance;
+  const properDegree = node.quaternion[0] - degreeTolerance <= quaternion[0] && quaternion[0] <= node.quaternion[0] + degreeTolerance
+    && node.quaternion[1] - degreeTolerance <= quaternion[1] && quaternion[1] <= node.quaternion[1] + degreeTolerance
+    && node.quaternion[2] - degreeTolerance <= quaternion[2] && quaternion[2] <= node.quaternion[2] + degreeTolerance
+  const properTime = node.time - timeTolerance <= elapsedTime && elapsedTime <= node.time + timeTolerance
+
+  return properStrain && properDegree && properTime;
 };
