@@ -4,11 +4,14 @@ import {
   nodesAtom,
   MissLimit,
   playerNames,
+  currentNodeAtom,
 } from "@/lib/atom";
 import { useAtomValue } from "jotai";
 
 export const RightTurn = () => {
   const turn = useAtomValue(turnAtom);
+  const currentNode = useAtomValue(currentNodeAtom);
+  const nodes = useAtomValue(nodesAtom);
   const missCount = useAtomValue(missCountAtom);
   return (
     <div
@@ -17,13 +20,21 @@ export const RightTurn = () => {
         backgroundColor: turn === 1 ? "#326bcd" : "#CADBFE",
       }}
       className="flex flex-col items-center justify-center absolute right-0 bottom-0 w-1/3 z-20 border-t-8"
-    />
+    >
+      {turn === 1 && (
+        <p className="text-4xl font-bold text-white">
+          {nodes.length - currentNode}
+        </p>
+      )}
+    </div>
   );
 };
 
 export const LeftTurn = () => {
   const turn = useAtomValue(turnAtom);
   const missCount = useAtomValue(missCountAtom);
+  const currentNode = useAtomValue(currentNodeAtom);
+  const nodes = useAtomValue(nodesAtom);
   return (
     <div
       style={{
@@ -31,7 +42,13 @@ export const LeftTurn = () => {
         backgroundColor: turn === -1 ? "#f04c4c" : "#FCA5A5",
       }}
       className="flex flex-col items-center justify-center absolute left-0 bottom-0 w-1/3 z-20 border-t-8"
-    />
+    >
+      {turn === -1 && (
+        <p className="text-4xl font-bold text-white">
+          {nodes.length - currentNode}
+        </p>
+      )}
+    </div>
   );
 };
 

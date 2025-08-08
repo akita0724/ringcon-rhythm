@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { RightTurn, LeftTurn, Info } from "@/components/turn";
 import { GameOver } from "@/components/gameOver";
+import { MotionDebug } from "@/components/motionDebug";
 import {
   baseValueAtom,
   connectedAtom,
@@ -14,10 +15,17 @@ import {
   turnAtom,
   turnStartTimeAtom,
   gameOverAtom,
+  motionDataAtom,
+  lastTiltCommandAtom,
 } from "@/lib/atom";
 import { useAtom, useSetAtom } from "jotai";
 import { useRingCon } from "@/lib/rincon";
 import { addNode } from "@/lib/addNode";
+import {
+  analyzeTiltCommand,
+  tiltDirectionToInputNumber,
+  resetCalibration,
+} from "@/lib/motionAnalyzer";
 
 const NEUTRAL_STRAIN_RADIUS = 0x0200;
 const NEUTRAL_STRAIN_RADIUS_MARGIN = 0x0010;
@@ -35,6 +43,8 @@ export default function Home() {
   const [gameOver, setGameOver] = useAtom(gameOverAtom);
   const setIsPressed = useSetAtom(isPlessedAtom);
   const [baseValue, setBaseValue] = useAtom(baseValueAtom);
+  const [_motionData, setMotionData] = useAtom(motionDataAtom);
+  const [lastTiltCommand, setLastTiltCommand] = useAtom(lastTiltCommandAtom);
 
   const setUserNames = useSetAtom(playerNames);
 
@@ -79,6 +89,42 @@ export default function Home() {
       if (event.reportId !== 0x30) return;
 
       const data = ringcon.extractStrainValueFromBuffer(event.data.buffer);
+
+      // モーションデータを抽出して更新
+      const newMotionData = ringcon.extractMotionData(event.data.buffer);
+      setMotionData(newMotionData);
+
+      // 傾きコマンドを解析
+      const tiltCommand = analyzeTiltCommand(newMotionData);
+      if (
+        tiltCommand &&
+        tiltCommand.intensity > 0.3 && // 強度の閾値を下げる
+        (!lastTiltCommand || Date.now() - lastTiltCommand.timestamp > 500) // 間隔を短縮
+      ) {
+        setLastTiltCommand(tiltCommand);
+
+        // 傾きコマンドをゲーム入力として処理
+        const inputNumber = tiltDirectionToInputNumber(tiltCommand.direction);
+        if (inputNumber > 0) {
+          console.log(
+            `Tilt input registered: ${inputNumber} (${tiltCommand.direction})`,
+          );
+          addNode(
+            inputNumber,
+            turn,
+            startTime,
+            setStartTime,
+            nodes,
+            setNodes,
+            currentNode,
+            setCurrentNode,
+            setMissCount,
+            setTurn,
+            setGameOver,
+          );
+          return;
+        }
+      }
 
       setIsPressed((prev) => {
         if (prev) {
@@ -145,6 +191,10 @@ export default function Home() {
     setCurrentNode,
     setMissCount,
     setTurn,
+    setGameOver,
+    setMotionData,
+    lastTiltCommand,
+    setLastTiltCommand,
   ]);
 
   return (
@@ -153,6 +203,7 @@ export default function Home() {
         <GameOver />
       ) : connected ? (
         <div>
+          <MotionDebug />
           <RightTurn />
           <button
             hidden={connected}
@@ -193,6 +244,7 @@ export default function Home() {
           <button
             className="bg-blue-500 text-white px-4 py-2 rounded"
             onClick={async () => {
+              resetCalibration(); // 校正をリセット
               await ringcon.connectRingCon();
               setConnected(true);
             }}

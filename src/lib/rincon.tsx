@@ -1,12 +1,18 @@
 "use client";
 
 import { useRef } from "react";
+import { extractMotionDataFromBuffer } from "./motionAnalyzer";
+import { MotionData } from "@/types/motion";
 
 export const useRingCon = (setBaseValue: (prev: number) => void) => {
   const connectedDeviceRef = useRef<HIDDevice | null>(null);
 
   const extractStrainValueFromBuffer = (buffer: ArrayBufferLike) => {
     return new DataView(buffer, 38, 2).getInt16(0, true);
+  };
+
+  const extractMotionData = (buffer: ArrayBufferLike): MotionData => {
+    return extractMotionDataFromBuffer(buffer);
   };
 
   const getConnectedDevice = () => connectedDeviceRef.current;
@@ -116,6 +122,14 @@ export const useRingCon = (setBaseValue: (prev: number) => void) => {
       },
     });
 
+    // IMU (Inertial Measurement Unit) を有効にする
+    const enable_IMU = defineSendReport({
+      subcommand: [0x40, 0x01],
+      expected: {
+        14: 0x40,
+      },
+    });
+
     const extractStrainValueFromBuffer = (buffer: ArrayBufferLike) => {
       return new DataView(buffer, 38, 2).getInt16(0, true);
     };
@@ -155,6 +169,9 @@ export const useRingCon = (setBaseValue: (prev: number) => void) => {
     await get_ext_dev_in_format_config_5C(device);
     await start_external_polling_5A(device);
 
+    // IMUを有効にする
+    await enable_IMU(device);
+
     const NEUTRAL_STRAIN_VALUE = await getStrainValue(device);
     setBaseValue(NEUTRAL_STRAIN_VALUE);
 
@@ -165,5 +182,10 @@ export const useRingCon = (setBaseValue: (prev: number) => void) => {
     await blinkLed(device);
   };
 
-  return { connectRingCon, extractStrainValueFromBuffer, getConnectedDevice };
+  return {
+    connectRingCon,
+    extractStrainValueFromBuffer,
+    extractMotionData,
+    getConnectedDevice,
+  };
 };
