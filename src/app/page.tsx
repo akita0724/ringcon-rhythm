@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { Right_Turn, Left_Turn } from "@/components/turn";
+import { RightTurn, LeftTurn, Info } from "@/components/turn";
+import { GameOver } from "@/components/gameOver";
 import {
   baseValueAtom,
   connectedAtom,
@@ -9,8 +10,10 @@ import {
   isPlessedAtom,
   missCountAtom,
   nodesAtom,
+  playerNames,
   turnAtom,
   turnStartTimeAtom,
+  gameOverAtom,
 } from "@/lib/atom";
 import { useAtom, useSetAtom } from "jotai";
 import { useRingCon } from "@/lib/rincon";
@@ -29,8 +32,11 @@ export default function Home() {
   // ミス数の配列 [左, 右]
   const [_missCount, setMissCount] = useAtom(missCountAtom);
   const [connected, setConnected] = useAtom(connectedAtom);
+  const [gameOver, setGameOver] = useAtom(gameOverAtom);
   const setIsPressed = useSetAtom(isPlessedAtom);
   const [baseValue, setBaseValue] = useAtom(baseValueAtom);
+
+  const setUserNames = useSetAtom(playerNames);
 
   const ringcon = useRingCon(setBaseValue);
 
@@ -99,6 +105,7 @@ export default function Home() {
             setCurrentNode,
             setMissCount,
             setTurn,
+            setGameOver,
           );
           return true;
         } else if (data > baseValue + NEUTRAL_STRAIN_RADIUS) {
@@ -113,6 +120,7 @@ export default function Home() {
             setCurrentNode,
             setMissCount,
             setTurn,
+            setGameOver,
           );
           return true;
         }
@@ -141,18 +149,58 @@ export default function Home() {
 
   return (
     <div>
-      <Right_Turn turn={turn} />
-      <button
-        hidden={connected}
-        onClick={async () => {
-          await ringcon.connectRingCon();
-          setConnected(true);
-        }}
-      >
-        リングコンに接続する
-      </button>
-      <Left_Turn turn={turn} />
-      {/* <Info /> */}
+      {gameOver ? (
+        <GameOver />
+      ) : connected ? (
+        <div>
+          <RightTurn />
+          <button
+            hidden={connected}
+            className="z-50"
+            onClick={async () => {
+              await ringcon.connectRingCon();
+              setConnected(true);
+            }}
+          >
+            リングコンに接続する
+          </button>
+          <LeftTurn />
+          <Info />
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center h-screen">
+          <h1 className="text-2xl font-bold mb-4">
+            リングコンに接続してください
+          </h1>
+          <div className="flex flex-row text-center">
+            <input
+              type="text"
+              placeholder="プレイヤー１"
+              className="border border-gray-300 rounded px-4 py-2 mb-4 mr-2"
+              onChange={(e) => {
+                setUserNames((prev) => [e.target.value, prev[1] || ""]);
+              }}
+            />
+            <input
+              type="text"
+              placeholder="プレイヤー２"
+              className="border border-gray-300 rounded px-4 py-2 mb-4"
+              onChange={(e) => {
+                setUserNames((prev) => [prev[0] || "", e.target.value]);
+              }}
+            />
+          </div>
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+            onClick={async () => {
+              await ringcon.connectRingCon();
+              setConnected(true);
+            }}
+          >
+            接続する
+          </button>
+        </div>
+      )}
     </div>
   );
 }

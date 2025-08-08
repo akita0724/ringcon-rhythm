@@ -1,4 +1,5 @@
 import { Node } from "@/types/node";
+import { MissLimit } from "./atom";
 
 export const addNode = function (
   input: number,
@@ -11,6 +12,7 @@ export const addNode = function (
   setCurrentNode: (node: number | ((prev: number) => number)) => void,
   setMissCount: (fn: (prev: [number, number]) => [number, number]) => void,
   setTurn: (prev: number) => void,
+  setGameOver?: (gameOver: boolean) => void,
 ) {
   let effectiveStartTime = startTime;
 
@@ -44,10 +46,25 @@ export const addNode = function (
       // OKの場合
     } else {
       // NGの場合
+      let newMissCount: [number, number] = [0, 0];
       if (turn === 1) {
-        setMissCount((prev) => [prev[0], prev[1] + 1]);
+        setMissCount((prev) => {
+          newMissCount = [prev[0], prev[1] + 1];
+          return newMissCount;
+        });
       } else if (turn === -1) {
-        setMissCount((prev) => [prev[0] + 1, prev[1]]);
+        setMissCount((prev) => {
+          newMissCount = [prev[0] + 1, prev[1]];
+          return newMissCount;
+        });
+      }
+
+      // ゲームオーバー判定
+      if (
+        setGameOver &&
+        (newMissCount[0] >= MissLimit || newMissCount[1] >= MissLimit)
+      ) {
+        setGameOver(true);
       }
     }
   }

@@ -23,6 +23,7 @@ const songInfoAtom = atom<{
 const connectedAtom = atom<boolean>(false);
 const isPlessedAtom = atom<boolean>(false);
 const baseValueAtom = atom<number>(0);
+const gameOverAtom = atom<boolean>(false);
 
 export {
   isStartedAtom,
@@ -35,4 +36,8 @@ export {
   connectedAtom,
   isPlessedAtom,
   baseValueAtom,
+  gameOverAtom,
 };
+
+export const MissLimit = 10; // ミスの上限
+export const playerNames = atom<[string, string]>(["Player 1", "Player 2"]);
