@@ -23,11 +23,11 @@ export default function Result() {
           Here are outcomes.
         </Typography>
         <Typography variant="h6" sx={{ padding: 2 }}>
-          {first}: { firstMoverScore > secondMoverScore ? "Won! " : firstMoverScore === secondMoverScore ? "Draw! " : "Lost... " }
+          {first}: { firstMoverScore > secondMoverScore ? "Won! " : firstMoverScore === secondMoverScore ? "Draw! " : "Lose... " }
           The score is {firstMoverScore}
         </Typography>
         <Typography variant="h6" sx={{ padding: 2 }}>
-          {second}: { firstMoverScore < secondMoverScore ? "Won! " : firstMoverScore === secondMoverScore ? "Draw! " : "Lost... " }
+          {second}: { firstMoverScore < secondMoverScore ? "Won! " : firstMoverScore === secondMoverScore ? "Draw! " : "Lose... " }
           The score is {secondMoverScore}
         </Typography>
         <Button variant="contained" onClick={() => handleNext()}>Finish</Button>
