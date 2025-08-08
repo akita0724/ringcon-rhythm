@@ -4,7 +4,7 @@ import { connectedAtom } from "@/lib/atom";
 import { useRegistration } from "@/lib/hooks/registration";
 import { useStepper } from "@/lib/hooks/stepper";
 import { igniteJoyCon } from "@/lib/rincon";
-import { Container, Typography, Button } from "@mui/material";
+import { Container, Typography, Button, Stack, Paper } from "@mui/material";
 import { useSetAtom } from "jotai";
 
 export default function Connector() {
@@ -12,23 +12,28 @@ export default function Connector() {
   const setConnected = useSetAtom(connectedAtom);
   const { PlayerRegistrationForm, isRegistered } = useRegistration();
 
-  async function changeHandler() {
-    await igniteJoyCon();
-    setConnected(true);
-    handleNext();
+  async function clickHandler() {
+    const isConnected = await igniteJoyCon();
+    console.log(isConnected);
+    if (isConnected) {
+      setConnected(true);
+      handleNext();
+    }
   }
 
   return (
-    <Container>
+    <Stack spacing={2} sx={{ width: "100%", height: "100%" }}>
       <PlayerRegistrationForm />
       {isRegistered && (
-        <>
-          <label htmlFor="connect">
-            <Typography>Connect to RingCon</Typography>
-          </label>
-          <Button onClick={changeHandler}>Connect</Button>
-        </>
+        <Container maxWidth="lg" sx={{ textAlign: "center" }} >
+          <Paper sx={{ padding: 2 }} >
+            <label htmlFor="connect">
+              <Typography sx={{ paddingBottom: 2 }}>Connect to RingCon</Typography>
+            </label>
+            <Button id="connect" variant="contained" onClick={clickHandler}>Connect</Button>
+          </Paper>
+        </Container>
       )}
-    </Container>
+    </Stack>
   );
 }

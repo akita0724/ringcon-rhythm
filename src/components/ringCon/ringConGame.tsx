@@ -1,7 +1,7 @@
 "use client";
 
 import { useStepper } from "@/lib/hooks/stepper";
-import { Container } from "@mui/material";
+import { Box } from "@mui/material";
 import { useEffect } from "react";
 import { RightTurn, LeftTurn } from "@/components/turn";
 import {
@@ -107,14 +107,15 @@ export default function AlternatePlay() {
   // ゲーム終了判定をuseEffectに移動
   useEffect(() => {
     if (nodes.length !== 0 && nodes.length === currentNode) {
-      handleNext();
+      // If this function is properly called just once, you can call this without passing any number.
+      handleNext(2);
     }
   }, [nodes.length, currentNode, handleNext]);
 
   return (
-    <Container>
+    <Box>
       <LeftTurn />
       <RightTurn />
-    </Container>
+    </Box>
   );
 }

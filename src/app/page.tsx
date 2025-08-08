@@ -11,11 +11,9 @@ const steps = ["Connection", "Playing", "Result"];
 export default function Home() {
 
   return (
-    <Box>
-      <StepperWrapper 
-        steps={steps}
-        components={[<Connector />, <AlternatePlay />, <Result />]}
-      />
-    </Box>
+    <StepperWrapper 
+      steps={steps}
+      components={[<Connector />, <AlternatePlay />, <Result />]}
+    />
   );
 }

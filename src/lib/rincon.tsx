@@ -4,12 +4,11 @@ import {
   connectedJoyCons,
   connectJoyCon,
   JoyConDataPacket,
-  JoyConLeft,
   JoyConRight,
   RingConDataPacket,
 } from "joy-con-webhid";
 import { useEffect, useState } from "react";
-import { JoyConEvents, AnalogStick } from "joy-con-webhid";
+import { AnalogStick } from "joy-con-webhid";
 
 // Refer to https://github.com/tomayac/joy-con-webhid/blob/main/demo/webmidi.js
 // especially, visualize function.
@@ -24,8 +23,10 @@ const initialStickValue = {
   gyro: { x: 0, y: 0, z: 0 },
 };
 
+// [TODO] Check if the size of joy cons are immediately reflected.
 export async function igniteJoyCon() {
   await connectJoyCon();
+  return connectedJoyCons.size > 0;
 }
 
 export function useRingConValues() {
