@@ -21,8 +21,8 @@ export const RingConInitialStickValue = {
   ver: 0,
   acc: { x: 0, y: 0, z: 0 },
   gyro: { x: 0, y: 0, z: 0 },
-  quaternion: { alpha: "", beta: "", gamma: "", },
-  rawQuaternion: { x: 0, y: 0, z: 0, w: 0 }
+  quaternion: { alpha: "", beta: "", gamma: "" },
+  rawQuaternion: { x: 0, y: 0, z: 0, w: 0 },
 };
 
 // [TODO] Check if the size of joy cons are immediately reflected.
@@ -32,7 +32,9 @@ export async function igniteJoyCon() {
 }
 
 export function useRingConValues() {
-  const [rightController, setRightController] = useState(RingConInitialStickValue);
+  const [rightController, setRightController] = useState(
+    RingConInitialStickValue,
+  );
 
   useEffect(() => {
     (async () => {
@@ -48,7 +50,7 @@ export function useRingConValues() {
           joyCon.eventListenerAttached = true;
           await joyCon.enableRingCon();
 
-          joyCon.addEventListener("hidinput", (e) => {
+          joyCon.addEventListener("hidinput", (e: any) => {
             const packet = e.detail as JoyConDataPacket;
             if (!packet) return null;
             if (!(joyCon instanceof JoyConRight)) return null;
@@ -63,24 +65,39 @@ export function useRingConValues() {
   return rightController;
 }
 
-function handleInput(packet: JoyConDataPacket): typeof RingConInitialStickValue {
-  const { actualAccelerometer, actualGyroscope, actualOrientationQuaternion, quaternion } = packet;
+function handleInput(
+  packet: JoyConDataPacket,
+): typeof RingConInitialStickValue {
+  const {
+    actualAccelerometer,
+    actualGyroscope,
+    actualOrientationQuaternion,
+    quaternion,
+  } = packet;
+
+  console.log(packet);
 
   const joystick = packet.analogStickRight as AnalogStick;
 
   const hor = Number(joystick.horizontal);
   const ver = Number(joystick.vertical);
-  
+
   const ringCon = packet.ringCon as RingConDataPacket;
   const strain = ringCon.strain;
 
-  return {
+  const result = {
     strain,
     hor,
     ver,
     acc: actualAccelerometer,
     gyro: actualGyroscope.rps,
-    quaternion: actualOrientationQuaternion,
-    rawQuaternion: quaternion
+    quaternion: actualOrientationQuaternion || {
+      alpha: "0",
+      beta: "0",
+      gamma: "0",
+    },
+    rawQuaternion: quaternion,
   };
+
+  return result;
 }
