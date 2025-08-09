@@ -21,7 +21,9 @@ export const RightTurn = () => {
       }}
       className="flex flex-col items-center justify-center absolute right-0 bottom-0 w-1/3 z-20 border-t-8"
     >
-      {turn === 1 && <p>{nodes.length - currentNode + 1}</p>}
+      {turn === 1 && (
+        <p className="text-4xl">{nodes.length - currentNode + 1}</p>
+      )}
     </div>
   );
 };
@@ -39,7 +41,9 @@ export const LeftTurn = () => {
       }}
       className="flex flex-col items-center justify-center absolute left-0 bottom-0 w-1/3 z-20 border-t-8"
     >
-      {turn === -1 && <p>{nodes.length - currentNode + 1}</p>}
+      {turn === -1 && (
+        <p className="text-4xl">{nodes.length - currentNode + 1}</p>
+      )}
     </div>
   );
 };
