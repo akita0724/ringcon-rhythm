@@ -5,12 +5,13 @@ import {
   Box,
   Button,
   Container,
+  Stack,
   Step,
   StepLabel,
   Stepper,
   Typography,
 } from "@mui/material";
-import { ReactNode, useEffect } from "react";
+import { ReactNode } from "react";
 
 type StepSwitch = {
   steps: string[];
@@ -22,24 +23,24 @@ export default function StepperWrapper({ steps, components }: StepSwitch) {
   const { activeStep, handleReset } = useStepper();
 
   return (
-    <Container>
-      <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: "100vw", height: "100vh", paddingX: 4, paddingY: 8 }}>
+      <Stack spacing={5} sx={{ width: "100%", height: "100%" }}>
         <Stepper activeStep={activeStep}>
           {steps.map((label, index) => (
-            <Step key={label}>
+            <Step key={index}>
               <StepLabel>{label}</StepLabel>
             </Step>
           ))}
         </Stepper>
         {activeStep === steps.length ? (
-          <Box>
-            <Typography>All stages have been done!</Typography>
-            <Button onClick={handleReset}>Restart!</Button>
-          </Box>
+          <Container maxWidth="lg" sx={{ textAlign: "center" }} >
+            <Typography sx={{ padding: 3 }}>All stages have been done!</Typography>
+            <Button variant="contained" onClick={handleReset}>Restart!</Button>
+          </Container>
         ) : (
           <Box>{components[activeStep]}</Box>
         )}
-      </Box>
-    </Container>
+      </Stack>
+    </Box>
   );
 }

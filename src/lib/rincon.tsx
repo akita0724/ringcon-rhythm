@@ -4,32 +4,37 @@ import {
   connectedJoyCons,
   connectJoyCon,
   JoyConDataPacket,
-  JoyConLeft,
   JoyConRight,
   RingConDataPacket,
 } from "joy-con-webhid";
 import { useEffect, useState } from "react";
-import { JoyConEvents, AnalogStick } from "joy-con-webhid";
+import { AnalogStick } from "joy-con-webhid";
 
 // Refer to https://github.com/tomayac/joy-con-webhid/blob/main/demo/webmidi.js
 // especially, visualize function.
 // However, the codes may be obsolete since the developer didn't revise script by typescript.
 // We have to manage to convert context from js to ts by ourselves.
 
-const initialStickValue = {
+export const RingConInitialStickValue = {
   strain: 0,
   hor: 0,
   ver: 0,
   acc: { x: 0, y: 0, z: 0 },
   gyro: { x: 0, y: 0, z: 0 },
+  quaternion: { alpha: "", beta: "", gamma: "" },
+  rawQuaternion: { x: 0, y: 0, z: 0, w: 0 },
 };
 
+// [TODO] Check if the size of joy cons are immediately reflected.
 export async function igniteJoyCon() {
   await connectJoyCon();
+  return connectedJoyCons.size > 0;
 }
 
 export function useRingConValues() {
-  const [rightController, setRightController] = useState(initialStickValue);
+  const [rightController, setRightController] = useState(
+    RingConInitialStickValue,
+  );
 
   useEffect(() => {
     (async () => {
@@ -45,7 +50,7 @@ export function useRingConValues() {
           joyCon.eventListenerAttached = true;
           await joyCon.enableRingCon();
 
-          joyCon.addEventListener("hidinput", (e) => {
+          joyCon.addEventListener("hidinput", (e: any) => {
             const packet = e.detail as JoyConDataPacket;
             if (!packet) return null;
             if (!(joyCon instanceof JoyConRight)) return null;
@@ -60,33 +65,39 @@ export function useRingConValues() {
   return rightController;
 }
 
-function handleInput(packet: JoyConDataPacket): typeof initialStickValue {
-  const { actualAccelerometer, actualGyroscope } = packet;
+function handleInput(
+  packet: JoyConDataPacket,
+): typeof RingConInitialStickValue {
+  const {
+    actualAccelerometer,
+    actualGyroscope,
+    actualOrientationQuaternion,
+    quaternion,
+  } = packet;
+
+  console.log(packet);
 
   const joystick = packet.analogStickRight as AnalogStick;
 
-  // [TODO] resolve incompatibility of object types.
-
   const hor = Number(joystick.horizontal);
   const ver = Number(joystick.vertical);
-  const acc = {
-    x: actualAccelerometer.x,
-    y: actualAccelerometer.y,
-    z: actualAccelerometer.z,
-  };
-  const gyro = {
-    x: actualGyroscope.rps.x,
-    y: actualGyroscope.rps.y,
-    z: actualGyroscope.rps.z,
-  };
+
   const ringCon = packet.ringCon as RingConDataPacket;
   const strain = ringCon.strain;
 
-  return {
+  const result = {
     strain,
     hor,
     ver,
-    acc,
-    gyro,
+    acc: actualAccelerometer,
+    gyro: actualGyroscope.rps,
+    quaternion: actualOrientationQuaternion || {
+      alpha: "0",
+      beta: "0",
+      gamma: "0",
+    },
+    rawQuaternion: quaternion,
   };
+
+  return result;
 }
