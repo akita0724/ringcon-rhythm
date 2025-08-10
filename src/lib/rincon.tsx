@@ -1,169 +1,103 @@
 "use client";
 
-import { useRef } from "react";
+import {
+  connectedJoyCons,
+  connectJoyCon,
+  JoyConDataPacket,
+  JoyConRight,
+  RingConDataPacket,
+} from "joy-con-webhid";
+import { useEffect, useState } from "react";
+import { AnalogStick } from "joy-con-webhid";
 
-export const useRingCon = (setBaseValue: (prev: number) => void) => {
-  const connectedDeviceRef = useRef<HIDDevice | null>(null);
+// Refer to https://github.com/tomayac/joy-con-webhid/blob/main/demo/webmidi.js
+// especially, visualize function.
+// However, the codes may be obsolete since the developer didn't revise script by typescript.
+// We have to manage to convert context from js to ts by ourselves.
 
-  const extractStrainValueFromBuffer = (buffer: ArrayBufferLike) => {
-    return new DataView(buffer, 38, 2).getInt16(0, true);
-  };
-
-  const getConnectedDevice = () => connectedDeviceRef.current;
-
-  const connectRingCon = async () => {
-    const defineSendReport = ({
-      subcommand,
-      expected,
-      timeoutMsg,
-    }: {
-      subcommand: number[];
-      expected: Record<number, number>;
-      timeoutMsg?: string;
-    }) => {
-      return (device: HIDDevice) =>
-        new Promise((resolve, reject) => {
-          const timeoutId = setTimeout(() => {
-            device.removeEventListener("inputreport", onReport);
-            reject(new Error(timeoutMsg ?? "timeout"));
-          }, 5000);
-
-          const onReport = (event: HIDInputReportEvent) => {
-            if (event.reportId !== 0x21) return;
-
-            const data = new Uint8Array(event.data.buffer);
-
-            for (const [key, value] of Object.entries(expected)) {
-              if (data[Number(key) - 1] !== value) return;
-            }
-
-            device.removeEventListener("inputreport", onReport);
-            clearTimeout(timeoutId);
-            setTimeout(resolve, 50);
-          };
-
-          device.addEventListener("inputreport", onReport);
-          device.sendReport(
-            0x01,
-            new Uint8Array([
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              0x00,
-              ...subcommand,
-            ]),
-          );
-        });
-    };
-    const set_input_report_mode_to_0x30 = defineSendReport({
-      subcommand: [0x03, 0x30],
-      expected: {
-        14: 0x03,
-      },
-    });
-    const enabling_MCU_data_22_1 = defineSendReport({
-      subcommand: [0x22, 0x01],
-      expected: {
-        13: 0x80,
-        14: 0x22,
-      },
-    });
-    const enabling_MCU_data_21_21_1_1 = defineSendReport({
-      subcommand: [
-        0x21, 0x21, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0xf3,
-      ],
-      expected: {
-        14: 0x21,
-      },
-    });
-    const get_ext_data_59 = defineSendReport({
-      subcommand: [0x59],
-      expected: {
-        14: 0x59,
-        16: 0x20,
-      },
-      timeoutMsg: "ring-con not found.",
-    });
-    const get_ext_dev_in_format_config_5C = defineSendReport({
-      subcommand: [
-        0x5c, 0x06, 0x03, 0x25, 0x06, 0x00, 0x00, 0x00, 0x00, 0x1c, 0x16, 0xed,
-        0x34, 0x36, 0x00, 0x00, 0x00, 0x0a, 0x64, 0x0b, 0xe6, 0xa9, 0x22, 0x00,
-        0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0xa8, 0xe1,
-        0x34, 0x36,
-      ],
-      expected: {
-        14: 0x5c,
-      },
-    });
-    const start_external_polling_5A = defineSendReport({
-      subcommand: [0x5a, 0x04, 0x01, 0x01, 0x02],
-      expected: {
-        14: 0x5a,
-      },
-    });
-    const blinkLed = defineSendReport({
-      subcommand: [0x30, 0x90],
-      expected: {
-        14: 0x30,
-      },
-    });
-
-    const extractStrainValueFromBuffer = (buffer: ArrayBufferLike) => {
-      return new DataView(buffer, 38, 2).getInt16(0, true);
-    };
-
-    const getStrainValue = (device: HIDDevice): Promise<number> =>
-      new Promise((resolve) => {
-        const checkInputReport = (event: HIDInputReportEvent) => {
-          if (event.reportId === 0x30) {
-            const strainValue = extractStrainValueFromBuffer(event.data.buffer);
-            if (strainValue !== 0x0000) {
-              device.removeEventListener("inputreport", checkInputReport);
-              resolve(strainValue);
-            }
-          }
-        };
-
-        device.addEventListener("inputreport", checkInputReport);
-      });
-
-    const [device] = await navigator.hid.requestDevice({
-      filters: [
-        {
-          vendorId: 0x057e,
-          productId: 0x2007,
-        },
-      ],
-    });
-
-    if (!device) throw new Error("No device found");
-
-    if (!device.opened) await device.open();
-
-    await set_input_report_mode_to_0x30(device);
-    await enabling_MCU_data_22_1(device);
-    await enabling_MCU_data_21_21_1_1(device);
-    await get_ext_data_59(device);
-    await get_ext_dev_in_format_config_5C(device);
-    await start_external_polling_5A(device);
-
-    const NEUTRAL_STRAIN_VALUE = await getStrainValue(device);
-    setBaseValue(NEUTRAL_STRAIN_VALUE);
-
-    connectedDeviceRef.current = device;
-
-    console.log("Ready!");
-
-    await blinkLed(device);
-  };
-
-  return { connectRingCon, extractStrainValueFromBuffer, getConnectedDevice };
+export const RingConInitialStickValue = {
+  strain: 0,
+  hor: 0,
+  ver: 0,
+  acc: { x: 0, y: 0, z: 0 },
+  gyro: { x: 0, y: 0, z: 0 },
+  quaternion: { alpha: "", beta: "", gamma: "" },
+  rawQuaternion: { x: 0, y: 0, z: 0, w: 0 },
 };
+
+// [TODO] Check if the size of joy cons are immediately reflected.
+export async function igniteJoyCon() {
+  await connectJoyCon();
+  return connectedJoyCons.size > 0;
+}
+
+export function useRingConValues() {
+  const [rightController, setRightController] = useState(
+    RingConInitialStickValue,
+  );
+
+  useEffect(() => {
+    (async () => {
+      await listenReport();
+    })();
+
+    async function listenReport() {
+      setInterval(async () => {
+        for (const joyCon of connectedJoyCons.values()) {
+          if (joyCon.eventListenerAttached) {
+            continue;
+          }
+          joyCon.eventListenerAttached = true;
+          await joyCon.enableRingCon();
+
+          joyCon.addEventListener("hidinput", (e: any) => {
+            const packet = e.detail as JoyConDataPacket;
+            if (!packet) return null;
+            if (!(joyCon instanceof JoyConRight)) return null;
+            const stickValue = handleInput(packet);
+            setRightController(stickValue);
+          });
+        }
+      }, 2000);
+    }
+  }, []);
+
+  return rightController;
+}
+
+function handleInput(
+  packet: JoyConDataPacket,
+): typeof RingConInitialStickValue {
+  const {
+    actualAccelerometer,
+    actualGyroscope,
+    actualOrientationQuaternion,
+    quaternion,
+  } = packet;
+
+  console.log(packet);
+
+  const joystick = packet.analogStickRight as AnalogStick;
+
+  const hor = Number(joystick.horizontal);
+  const ver = Number(joystick.vertical);
+
+  const ringCon = packet.ringCon as RingConDataPacket;
+  const strain = ringCon.strain;
+
+  const result = {
+    strain,
+    hor,
+    ver,
+    acc: actualAccelerometer,
+    gyro: actualGyroscope.rps,
+    quaternion: actualOrientationQuaternion || {
+      alpha: "0",
+      beta: "0",
+      gamma: "0",
+    },
+    rawQuaternion: quaternion,
+  };
+
+  return result;
+}
